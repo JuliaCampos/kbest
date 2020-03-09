@@ -1,0 +1,191 @@
+// k_best.cpp : Este arquivo contém a função 'main'. A execução do programa começa e termina ali.
+//
+
+#include <iostream>
+#include<vector>
+#include <algorithm>
+#include<string.h>
+
+using namespace std;
+
+class Aresta {
+	int vertice1, vertice2, peso;
+
+public:
+	Aresta(int v1, int v2, int p) {
+		vertice1 = v1;
+		vertice2 = v2;
+		peso = p;
+	}
+
+	int obterVertice1() {
+		return vertice1;
+	}
+
+	int obterVertice2() {
+		return vertice2;
+	}
+
+	int obterPeso() {
+		return peso;
+	}
+
+	//sobrescrita do operador <
+	bool operator < (const Aresta& aresta2) {
+		return(peso < aresta2.peso);
+	}
+};
+
+class Grafo {
+	
+	//vertice
+	int V;
+
+	//conjunto de arestas
+	vector<Aresta> arestas;
+
+public:
+
+	Grafo(int V) {
+		this->V = V;
+	}
+
+	//função para adicionar aresta
+	void adicionaAresta(int v1, int v2, int peso) {
+		Aresta aresta(v1, v2, peso);
+
+		arestas.push_back(aresta);
+	}
+
+	void proibeAresta(int v1, int v2, int peso) {
+		Aresta aresta(v1, v2, peso);
+
+		arestas.pop_back();
+	}
+
+	//função que busca subconjunto de um elemento i
+	int buscar(int subset[], int i) {
+
+		if (subset[i] == -1) {
+			return i;
+		}
+		else {
+			return buscar(subset, subset[i]);
+		}
+
+	}
+
+	//função para unir dois subconjuntos em um subconjunto
+	void unir(int subset[], int v1, int v2) {
+		int v1_set = buscar(subset, v1);
+		int v2_set = buscar(subset, v2);
+		subset[v1_set] = v2_set;
+	}
+
+	//algoritmo de kruskall
+	// encontra um subconjunto das arestas que forma uma árvore que inclui todos os vértices
+	void k_best() {
+		
+		vector<Aresta> arvore;
+
+		int size_arestas = arestas.size();
+
+		int a = 0;
+
+		//aloca a memoria para criar os subconjuntos
+		int* subset = new int[V];
+
+		// inicializa todos os subconjuntos como conjuntos de um único elemento
+		memset(subset, -1, sizeof(int) * V);
+
+		while (a < 4) {
+
+		//ordena as arestas pelo menor peso
+		sort(arestas.begin(), arestas.end());
+
+			for (int i = 0; i < size_arestas; i++) {
+				int v1 = buscar(subset, arestas[i].obterVertice1());
+				int v2 = buscar(subset, arestas[i].obterVertice2());
+
+				//montando a arvore
+				if (v1 != v2) {
+					arvore.push_back(arestas[i]);
+					unir(subset, v1, v2);
+				}
+
+				int size_arvore = arvore.size();
+
+				cout << "size_arvore_kuskall " << size_arvore << endl;
+
+				//mostra as arestas com seus respectivos pesos
+				for (int i = 0; i < size_arvore; i++) {
+
+					char v1 = 'A' + arvore[i].obterVertice1();
+					char v2 = 'A' + arvore[i].obterVertice2();
+
+					cout << i << " ( " << v1 << ", " << v2 << " ) = " << arvore[i].obterPeso() << endl;
+				}
+
+			}//for size_aresta
+
+			try {
+				arvore.pop_back();
+			}
+			catch (int e) {
+				cout << "erro - grafo desconexo - " << e << endl;
+			}
+			a++;
+
+		}//fim do while
+
+	}//fim de kruskall - kbest
+
+};
+
+
+int main()
+{
+	
+	 Grafo g(5);
+
+	g.adicionaAresta(0, 1, 13);
+	g.adicionaAresta(0, 2, 5);
+	g.adicionaAresta(0, 3, 8);
+	g.adicionaAresta(0, 4, 9);
+
+	g.adicionaAresta(1, 0, 13);
+	g.adicionaAresta(1, 2, 3);
+	g.adicionaAresta(1, 3, 10);
+	g.adicionaAresta(1, 4, 2);
+
+	g.adicionaAresta(2, 0, 5);
+	g.adicionaAresta(2, 1, 3);
+	g.adicionaAresta(2, 3, 7);
+	g.adicionaAresta(2, 4, 12);
+
+	g.adicionaAresta(3, 0, 8);
+	g.adicionaAresta(3, 1, 10);
+	g.adicionaAresta(3, 2, 7);
+	g.adicionaAresta(3, 4, 10);
+
+	g.adicionaAresta(4, 0, 9);
+	g.adicionaAresta(4, 1, 2);
+	g.adicionaAresta(4, 3, 10);
+	g.adicionaAresta(4, 2, 12);
+
+
+	g.k_best();
+
+	
+}
+
+// Executar programa: Ctrl + F5 ou Menu Depurar > Iniciar Sem Depuração
+// Depurar programa: F5 ou menu Depurar > Iniciar Depuração
+
+// Dicas para Começar: 
+//   1. Use a janela do Gerenciador de Soluções para adicionar/gerenciar arquivos
+//   2. Use a janela do Team Explorer para conectar-se ao controle do código-fonte
+//   3. Use a janela de Saída para ver mensagens de saída do build e outras mensagens
+//   4. Use a janela Lista de Erros para exibir erros
+//   5. Ir Para o Projeto > Adicionar Novo Item para criar novos arquivos de código, ou Projeto > Adicionar Item Existente para adicionar arquivos de código existentes ao projeto
+//   6. No futuro, para abrir este projeto novamente, vá para Arquivo > Abrir > Projeto e selecione o arquivo. sln
